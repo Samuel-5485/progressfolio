@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createPushWebhook } from "@/lib/github/client";
 import { importRecentCommits } from "@/lib/github/import";
 import { generateDraftEntries } from "@/lib/timeline/generate";
 import type { GithubAccount, Profile } from "@/lib/types";
@@ -95,6 +96,24 @@ export async function connectRepoAction(
   } catch (err) {
     console.error("Initial commit import/summary failed:", err);
     // Repo stays tracked - the user can retry from the dashboard later.
+  }
+
+  // Best-effort: register a push webhook for near-real-time updates. Only
+  // reachable from GitHub once NEXT_PUBLIC_SITE_URL is a public https URL
+  // (e.g. in production) - harmless, and skipped, on localhost.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+  if (siteUrl.startsWith("https://") && webhookSecret) {
+    const webhookId = await createPushWebhook(
+      githubAccount.access_token,
+      owner,
+      repoName,
+      `${siteUrl}/api/webhooks/github`,
+      webhookSecret
+    );
+    if (webhookId) {
+      await supabase.from("tracked_repos").update({ webhook_id: webhookId }).eq("id", trackedRepo.id);
+    }
   }
 
   await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);

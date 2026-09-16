@@ -102,3 +102,31 @@ export async function getCommitDetail(
     filesChanged: (data.files ?? []).map((f) => f.filename),
   };
 }
+
+/**
+ * Registers a `push` webhook on the repo so new commits trigger a
+ * near-real-time sync instead of waiting for a manual "Sync now".
+ * Returns null (and logs) on failure - the repo import still works
+ * without it, just without automatic incremental updates.
+ */
+export async function createPushWebhook(
+  accessToken: string,
+  owner: string,
+  repo: string,
+  webhookUrl: string,
+  secret: string
+): Promise<number | null> {
+  try {
+    const octokit = createGithubClient(accessToken);
+    const { data } = await octokit.rest.repos.createWebhook({
+      owner,
+      repo,
+      config: { url: webhookUrl, content_type: "json", secret },
+      events: ["push"],
+    });
+    return data.id;
+  } catch (err) {
+    console.error(`Failed to create GitHub webhook for ${owner}/${repo}:`, err);
+    return null;
+  }
+}

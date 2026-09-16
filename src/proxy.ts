@@ -57,6 +57,6 @@ export const config = {
      * Run on every route except static assets and image optimization
      * files, so the session cookie stays fresh app-wide.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

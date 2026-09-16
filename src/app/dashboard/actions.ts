@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { generateDraftEntries } from "@/lib/timeline/generate";
-import type { TrackedRepo } from "@/lib/types";
+import { getOrGenerateWeeklyPost } from "@/lib/timeline/weekly";
+import type { Profile, TrackedRepo } from "@/lib/types";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 async function requireUser(supabase: SupabaseClient): Promise<User> {
@@ -77,6 +78,30 @@ export async function regenerateEntriesAction(): Promise<void> {
       userId: user.id,
       repoId: repo.id,
       repoFullName: repo.full_name,
+    });
+  }
+
+  revalidatePath("/dashboard");
+}
+
+/** Force-regenerates this week's share post (bypassing the cache). */
+export async function regenerateWeeklyPostAction(): Promise<void> {
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle<Profile>();
+
+  if (profile) {
+    await getOrGenerateWeeklyPost({
+      supabase,
+      userId: user.id,
+      profile,
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+      force: true,
     });
   }
 

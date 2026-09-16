@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
 import { DraftInbox } from "./draft-inbox";
-import { regenerateEntriesAction } from "./actions";
+import { regenerateEntriesAction, regenerateWeeklyPostAction } from "./actions";
 import { computeStreakWeeks } from "@/lib/streak";
+import { getOrGenerateWeeklyPost } from "@/lib/timeline/weekly";
+import { CopyButton } from "@/components/copy-button";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
 export default async function DashboardPage() {
@@ -44,6 +46,16 @@ export default async function DashboardPage() {
 
   const publishedCount = publishedDates?.length ?? 0;
   const streakWeeks = computeStreakWeeks((publishedDates ?? []).map((e) => e.entry_date as string));
+
+  const weeklyPost =
+    profile && publishedCount > 0
+      ? await getOrGenerateWeeklyPost({
+          supabase,
+          userId: user.id,
+          profile,
+          siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+        })
+      : null;
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
@@ -90,10 +102,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between rounded-xl border border-foreground/10 p-6">
           <div>
             <h2 className="font-medium">Streak: {streakWeeks} weeks</h2>
-            <p className="text-sm text-foreground/60">
-              {publishedCount} published entries. Weekly share post is
-              coming in the next build step.
-            </p>
+            <p className="text-sm text-foreground/60">{publishedCount} published entries.</p>
           </div>
           <form action={regenerateEntriesAction}>
             <button
@@ -103,6 +112,26 @@ export default async function DashboardPage() {
               Sync now
             </button>
           </form>
+        </div>
+      )}
+
+      {weeklyPost && (
+        <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium">This week&apos;s share post</h2>
+            <form action={regenerateWeeklyPostAction}>
+              <button
+                type="submit"
+                className="text-xs text-foreground/50 underline underline-offset-4"
+              >
+                Regenerate
+              </button>
+            </form>
+          </div>
+          <p className="whitespace-pre-wrap rounded-lg bg-foreground/5 p-4 text-sm">
+            {weeklyPost.postText}
+          </p>
+          <CopyButton text={weeklyPost.postText} />
         </div>
       )}
 
