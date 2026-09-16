@@ -25,6 +25,11 @@ export default async function DashboardPage() {
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
+  const { count: commitCount } = await supabase
+    .from("raw_commits")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex items-center justify-between">
@@ -62,7 +67,8 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 p-6">
           <h2 className="font-medium">Streak: {profile?.streak_weeks ?? 0} weeks</h2>
           <p className="text-sm text-foreground/60">
-            Your timeline inbox and weekly share post are coming in the next
+            {commitCount ?? 0} commits imported and ready to summarize. The
+            AI draft inbox and weekly share post are coming in the next
             build steps.
           </p>
         </div>
