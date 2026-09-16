@@ -1,0 +1,21 @@
+---
+description: Locked AI model policy for ProgressFolio - Gemini Flash-Lite only
+alwaysApply: true
+---
+
+# AI model policy
+
+ProgressFolio uses **Google Gemini Flash-Lite** as the only AI model for
+rewriting/summarizing text (commit summaries, weekly share posts, and any
+future text cleanup on manual logs).
+
+- All calls go through [`src/lib/ai/gemini.ts`](../../src/lib/ai/gemini.ts).
+  Do not call the Gemini SDK directly from elsewhere - add a new exported
+  function to that file instead.
+- Model id comes from `process.env.GEMINI_MODEL`, defaulting to the rolling
+  alias `gemini-flash-lite-latest`.
+- Do **not** introduce OpenAI, Anthropic/Claude, or any other AI provider or
+  SDK anywhere in this codebase unless the user explicitly asks for it in
+  that conversation.
+- If a new feature needs text generation, extend `gemini.ts` rather than
+  creating a parallel AI client.
