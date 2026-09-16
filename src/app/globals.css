@@ -8,6 +8,13 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-elevated: var(--elevated);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-hairline: var(--hairline);
+  --color-hairline-soft: var(--hairline-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -23,4 +30,46 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+ * Marketing site design system (homepage + /features, /how-it-works,
+ * /docs, /changelog, /pricing). Scoped to this class so the app shell
+ * (dashboard, login, onboarding, public profile) is unaffected.
+ */
+.marketing-shell {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --elevated: #111111;
+  --muted: #8a8a8a;
+  --faint: #5f5f5f;
+  --accent: #f5793a;
+  --accent-hover: #ff8c4c;
+  --hairline: #1f1f1f;
+  --hairline-soft: #171717;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), var(--font-geist-sans), ui-sans-serif, sans-serif;
+}
+
+.marketing-shell a:focus-visible,
+.marketing-shell button:focus-visible,
+.marketing-shell summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
