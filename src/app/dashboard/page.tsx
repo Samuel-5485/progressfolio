@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
-import type { Profile } from "@/lib/types";
+import { DraftInbox } from "./draft-inbox";
+import { regenerateEntriesAction } from "./actions";
+import type { Profile, TimelineEntry } from "@/lib/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,10 +27,19 @@ export default async function DashboardPage() {
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
-  const { count: commitCount } = await supabase
-    .from("raw_commits")
+  const { data: drafts } = await supabase
+    .from("timeline_entries")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("status", "draft")
+    .order("entry_date", { ascending: false })
+    .returns<TimelineEntry[]>();
+
+  const { count: publishedCount } = await supabase
+    .from("timeline_entries")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("status", "published");
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
@@ -64,15 +75,26 @@ export default async function DashboardPage() {
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 p-6">
-          <h2 className="font-medium">Streak: {profile?.streak_weeks ?? 0} weeks</h2>
-          <p className="text-sm text-foreground/60">
-            {commitCount ?? 0} commits imported and ready to summarize. The
-            AI draft inbox and weekly share post are coming in the next
-            build steps.
-          </p>
+        <div className="flex items-center justify-between rounded-xl border border-foreground/10 p-6">
+          <div>
+            <h2 className="font-medium">Streak: {profile?.streak_weeks ?? 0} weeks</h2>
+            <p className="text-sm text-foreground/60">
+              {publishedCount ?? 0} published entries. Weekly share post is
+              coming in the next build step.
+            </p>
+          </div>
+          <form action={regenerateEntriesAction}>
+            <button
+              type="submit"
+              className="rounded-full border border-foreground/20 px-4 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
+            >
+              Sync now
+            </button>
+          </form>
         </div>
       )}
+
+      <DraftInbox drafts={drafts ?? []} />
     </main>
   );
 }

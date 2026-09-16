@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { importRecentCommits } from "@/lib/github/import";
+import { generateDraftEntries } from "@/lib/timeline/generate";
 import type { GithubAccount, Profile } from "@/lib/types";
 
 const FREE_PLAN_REPO_LIMIT = 1;
@@ -84,9 +85,16 @@ export async function connectRepoAction(
       accessToken: githubAccount.access_token,
       githubLogin: githubAccount.github_login,
     });
+
+    await generateDraftEntries({
+      supabase,
+      userId: user.id,
+      repoId: trackedRepo.id,
+      repoFullName: fullName,
+    });
   } catch (err) {
-    console.error("Initial commit import failed:", err);
-    // Repo stays tracked - the user can retry the import from the dashboard later.
+    console.error("Initial commit import/summary failed:", err);
+    // Repo stays tracked - the user can retry from the dashboard later.
   }
 
   await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
