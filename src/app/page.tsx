@@ -47,6 +47,12 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      <p className="max-w-md text-xs text-foreground/40">
+        Built for CS students, indie hackers, and anyone building in public
+        who wants proof of consistency - not just a couple of polished
+        projects.
+      </p>
     </main>
   );
 }

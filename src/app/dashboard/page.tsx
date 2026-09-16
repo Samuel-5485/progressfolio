@@ -59,7 +59,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">
             Welcome{profile?.display_name ? `, ${profile.display_name}` : ""}
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
       ) : (
-        <div className="flex items-center justify-between rounded-xl border border-foreground/10 p-6">
+        <div className="flex flex-col gap-4 rounded-xl border border-foreground/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-medium">Streak: {streakWeeks} weeks</h2>
             <p className="text-sm text-foreground/60">{publishedCount} published entries.</p>
