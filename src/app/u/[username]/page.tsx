@@ -137,6 +137,7 @@ function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?:
     <div className="flex flex-col gap-2 rounded-xl border border-foreground/10 p-4">
       <span className="text-xs uppercase tracking-wide text-foreground/40">
         {entry.entry_date}
+        {entry.source === "manual" && " · manual log"}
       </span>
       <h3 className="font-medium">{entry.title}</h3>
       <p className={`text-sm text-foreground/70 ${compact ? "line-clamp-3" : ""}`}>
@@ -151,6 +152,19 @@ function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?:
             >
               {skill}
             </span>
+          ))}
+        </div>
+      )}
+      {!compact && entry.screenshot_urls.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3">
+          {entry.screenshot_urls.map((url) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={url}
+              src={url}
+              alt=""
+              className="aspect-video w-full rounded-md object-cover"
+            />
           ))}
         </div>
       )}

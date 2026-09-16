@@ -61,7 +61,15 @@ export default async function DashboardPage() {
             </p>
           )}
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/new"
+            className="rounded-full border border-foreground/20 px-4 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
+          >
+            + Log manual work
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
 
       {!repoCount ? (
