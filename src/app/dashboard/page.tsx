@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
 import { DraftInbox } from "./draft-inbox";
 import { regenerateEntriesAction } from "./actions";
+import { computeStreakWeeks } from "@/lib/streak";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
 export default async function DashboardPage() {
@@ -35,11 +36,14 @@ export default async function DashboardPage() {
     .order("entry_date", { ascending: false })
     .returns<TimelineEntry[]>();
 
-  const { count: publishedCount } = await supabase
+  const { data: publishedDates } = await supabase
     .from("timeline_entries")
-    .select("id", { count: "exact", head: true })
+    .select("entry_date")
     .eq("user_id", user.id)
     .eq("status", "published");
+
+  const publishedCount = publishedDates?.length ?? 0;
+  const streakWeeks = computeStreakWeeks((publishedDates ?? []).map((e) => e.entry_date as string));
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
@@ -77,9 +81,9 @@ export default async function DashboardPage() {
       ) : (
         <div className="flex items-center justify-between rounded-xl border border-foreground/10 p-6">
           <div>
-            <h2 className="font-medium">Streak: {profile?.streak_weeks ?? 0} weeks</h2>
+            <h2 className="font-medium">Streak: {streakWeeks} weeks</h2>
             <p className="text-sm text-foreground/60">
-              {publishedCount ?? 0} published entries. Weekly share post is
+              {publishedCount} published entries. Weekly share post is
               coming in the next build step.
             </p>
           </div>
