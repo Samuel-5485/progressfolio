@@ -25,10 +25,6 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  // #region agent log
-  fetch('http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dfb447'},body:JSON.stringify({sessionId:'dfb447',hypothesisId:'H4',location:'src/app/dashboard/page.tsx:DashboardPage',message:'dashboard greeting - checking whether the same email-derived display_name shows up in the private dashboard too',data:{hasDisplayName: profile?.display_name != null,displayNameLooksLikeEmail: typeof profile?.display_name === 'string' && profile.display_name.includes('@'),hasGithubLogin: profile?.github_login != null},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion agent log
-
   const { count: repoCount } = await supabase
     .from("tracked_repos")
     .select("id", { count: "exact", head: true })
@@ -83,6 +79,12 @@ export default async function DashboardPage() {
             className="rounded-full border border-foreground/20 px-4 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
           >
             + Log manual work
+          </Link>
+          <Link
+            href="/settings"
+            className="rounded-full border border-foreground/20 px-4 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
+          >
+            Settings
           </Link>
           <SignOutButton />
         </div>

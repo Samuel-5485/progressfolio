@@ -17,10 +17,6 @@ async function getPublicProfile(username: string) {
 
   if (!profile) return null;
 
-  // #region agent log
-  fetch('http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dfb447'},body:JSON.stringify({sessionId:'dfb447',hypothesisId:'H1_H2',location:'src/app/u/[username]/page.tsx:getPublicProfile',message:'public profile fetched - checking display_name source for the heading',data:{username:profile.username,hasDisplayName:profile.display_name != null,displayNameLooksLikeEmail: typeof profile.display_name === 'string' && profile.display_name.includes('@'),displayNameLength: typeof profile.display_name === 'string' ? profile.display_name.length : null,hasGithubLogin: profile.github_login != null},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion agent log
-
   const { data: entries } = await supabase
     .from("timeline_entries")
     .select("*")
