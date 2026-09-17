@@ -112,7 +112,9 @@ Write a summary of what was shipped in a confident but plain, non-marketing tone
 
 export interface WeeklyPostInput {
   displayName: string;
-  weekLabel: string;
+  /** The user's actual consecutive-week shipping streak (same number
+   * shown on the dashboard) - never a calendar week-of-year number. */
+  streakWeeks: number;
   entries: { title: string; whatShipped: string }[];
   profileUrl: string;
 }
@@ -122,7 +124,7 @@ export interface WeeklyPostInput {
  * published timeline entries.
  */
 export async function generateWeeklyPost(input: WeeklyPostInput): Promise<string> {
-  const { displayName, weekLabel, entries, profileUrl } = input;
+  const { displayName, streakWeeks, entries, profileUrl } = input;
 
   const entryList = entries
     .map((e, i) => `${i + 1}. ${e.title} - ${e.whatShipped}`)
@@ -131,13 +133,14 @@ export async function generateWeeklyPost(input: WeeklyPostInput): Promise<string
   const prompt = `Write a short, first-person "building in public" recap post for X/LinkedIn.
 
 Builder: ${displayName}
-Week: ${weekLabel}
+Current shipping streak: ${streakWeeks} consecutive week${streakWeeks === 1 ? "" : "s"}
 Shipped this week:
 ${entryList}
 
 Requirements:
 - 3-6 lines, first person, no hashtags spam (0-2 max), no emojis unless natural
 - Sound like a real student builder sharing progress, not a press release
+- If you reference a week or streak number anywhere in the post, it MUST be exactly ${streakWeeks} (the shipping streak above) - never a calendar week-of-year number like "Week 38", and never a number you invent
 - End with a line pointing readers to: ${profileUrl}
 Return only the post text, nothing else.`;
 

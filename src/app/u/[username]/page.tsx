@@ -160,15 +160,25 @@ function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?:
         </div>
       )}
       {entry.screenshot_urls.length > 0 && (
-        <div className={`grid gap-2 pt-1 ${compact ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
+        <div
+          className={`grid gap-2 pt-1 ${
+            compact || entry.screenshot_urls.length === 1
+              ? "grid-cols-1"
+              : "grid-cols-2 sm:grid-cols-3"
+          }`}
+        >
           {(compact ? entry.screenshot_urls.slice(0, 1) : entry.screenshot_urls).map((url) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // Fixed-ratio wrapper + absolutely-positioned image: the crop
+            // box is a plain div sized purely by aspect-ratio/max-height,
+            // so the image can never stretch or distort regardless of its
+            // real dimensions or the grid's own sizing behavior.
+            <div
               key={url}
-              src={url}
-              alt=""
-              className="aspect-video w-full rounded-md object-cover"
-            />
+              className="relative aspect-video max-h-56 w-full overflow-hidden rounded-md border border-foreground/10"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            </div>
           ))}
         </div>
       )}

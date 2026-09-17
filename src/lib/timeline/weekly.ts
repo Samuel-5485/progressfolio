@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateWeeklyPost } from "@/lib/ai/gemini";
+import { computeStreakWeeks } from "@/lib/streak";
 import type { Profile } from "@/lib/types";
 
 /** Standard ISO 8601 week label, e.g. "2026-W38". Used as the cache key for weekly_posts. */
@@ -73,9 +74,22 @@ export async function getOrGenerateWeeklyPost(params: {
 
   if (!entries || entries.length === 0) return null;
 
+  // Same source of truth as the dashboard's "Streak: N weeks" - computed
+  // from ALL published dates, not just this calendar week, so the share
+  // post always agrees with what's shown elsewhere in the UI.
+  const { data: allPublishedDates } = await supabase
+    .from("timeline_entries")
+    .select("entry_date")
+    .eq("user_id", userId)
+    .eq("status", "published");
+
+  const streakWeeks = computeStreakWeeks(
+    (allPublishedDates ?? []).map((e) => e.entry_date as string)
+  );
+
   const postText = await generateWeeklyPost({
     displayName: profile.display_name ?? profile.username,
-    weekLabel: label,
+    streakWeeks,
     entries: (entries as { title: string; summary: string }[]).map((e) => ({
       title: e.title,
       whatShipped: e.summary,
