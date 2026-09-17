@@ -52,29 +52,42 @@ const SOCIAL_LINKS = [
 export function Footer() {
   return (
     <footer className="border-t border-hairline">
-      <div className="mx-auto flex max-w-[1100px] flex-col items-start gap-4 px-6 py-10">
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-semibold tracking-[-0.02em] text-foreground">
-            ProgressFolio
-          </span>
-          <p className="text-sm text-faint">
-            Turn your commits into a portfolio that proves you ship.
-          </p>
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-6 px-6 py-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-semibold tracking-[-0.02em] text-foreground">
+              ProgressFolio
+            </span>
+            <p className="text-sm text-faint">
+              Turn your commits into a portfolio that proves you ship.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 sm:justify-end">
+            {SOCIAL_LINKS.map(({ href, label, icon: Icon, external }) => (
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+                className="rounded-md text-muted transition-colors duration-150 hover:text-foreground"
+              >
+                <Icon className="h-[18px] w-[18px]" />
+              </a>
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          {SOCIAL_LINKS.map(({ href, label, icon: Icon, external }) => (
-            <a
-              key={label}
-              href={href}
-              aria-label={label}
-              {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-              className="rounded-md text-muted transition-colors duration-150 hover:text-foreground"
-            >
-              <Icon className="h-[18px] w-[18px]" />
-            </a>
-          ))}
-        </div>
+        <p className="text-xs text-faint">
+          Designed & built by Samuel Diriba •{" "}
+          <a
+            href="mailto:samediriba54@gmail.com"
+            className="transition-colors hover:text-foreground"
+          >
+            samediriba54@gmail.com
+          </a>{" "}
+          • © 2026
+        </p>
       </div>
     </footer>
   );

@@ -136,8 +136,8 @@ const sections = [
           </li>
           <li>
             <span className="text-foreground">Still stuck</span> - email{" "}
-            <a href="mailto:support@progressfolio.app" className="underline underline-offset-4">
-              support@progressfolio.app
+            <a href="mailto:samediriba54@gmail.com" className="underline underline-offset-4">
+              support
             </a>{" "}
             and we&apos;ll help sort it out.
           </li>
