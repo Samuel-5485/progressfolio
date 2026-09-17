@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { generateDraftEntries } from "@/lib/timeline/generate";
 import { getOrGenerateWeeklyPost } from "@/lib/timeline/weekly";
+import { normalizeSkills } from "@/lib/skills";
 import type { Profile, TrackedRepo } from "@/lib/types";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
@@ -17,10 +18,10 @@ async function requireUser(supabase: SupabaseClient): Promise<User> {
 
 function parseSkills(raw: FormDataEntryValue | null): string[] {
   if (typeof raw !== "string") return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // Normalize here (the source, at publish time) rather than only at
+  // display time, so casing is consistent regardless of how the user
+  // edited the AI-drafted skills field before hitting Publish.
+  return normalizeSkills(raw.split(","));
 }
 
 /** Saves the (possibly edited) draft fields and publishes it to the public timeline. */

@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { normalizeSkills } from "@/lib/skills";
 
 /**
  * Single entry point for ALL AI text rewriting/summarization in
@@ -69,7 +70,7 @@ Date: ${entryDate}
 Raw commits from that day:
 ${commitList}
 
-Write a summary of what was shipped in a confident but plain, non-marketing tone. Infer likely skills demonstrated and a likely lesson learned from the diff shape and commit messages - keep both grounded in the evidence, do not invent unrelated claims.`;
+Write a summary of what was shipped in a confident but plain, non-marketing tone. Infer likely skills demonstrated and a likely lesson learned from the diff shape and commit messages - keep both grounded in the evidence, do not invent unrelated claims. Format each skill/technology name with its standard proper casing (e.g. "TypeScript", "JavaScript", "HTML", "CSS", "PostgreSQL"), never all-lowercase or all-caps unless that's how it's actually written (e.g. "npm").`;
 
   const response = await getClient().models.generateContent({
     model: MODEL,
@@ -103,7 +104,10 @@ Write a summary of what was shipped in a confident but plain, non-marketing tone
   if (!text) {
     throw new Error("Gemini returned an empty response for daily summary.");
   }
-  return JSON.parse(text) as DailyEntrySummary;
+  const parsed = JSON.parse(text) as DailyEntrySummary;
+  // Post-processing safety net: normalize casing regardless of what the
+  // model actually returned, so skill tags are always consistent.
+  return { ...parsed, skills: normalizeSkills(parsed.skills) };
 }
 
 export interface WeeklyPostInput {

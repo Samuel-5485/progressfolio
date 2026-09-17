@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeSkills } from "@/lib/skills";
 
 export interface CreateManualEntryInput {
   entryDate: string;
@@ -45,7 +46,9 @@ export async function createManualEntryAction(
     entry_date: input.entryDate,
     title: input.title.trim(),
     summary: input.summary.trim(),
-    skills: input.skills,
+    // Normalized here at the source (manual logs never go through
+    // Gemini) so casing is consistent regardless of how the user typed it.
+    skills: normalizeSkills(input.skills),
     lessons: input.lessons.trim() || null,
     screenshot_urls: input.screenshotUrls,
     status: "published",

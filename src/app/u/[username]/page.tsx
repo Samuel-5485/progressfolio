@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { computeStreakWeeks } from "@/lib/streak";
+import { normalizeSkills } from "@/lib/skills";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
 const FEATURED_COUNT = 3;
@@ -145,7 +146,10 @@ function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?:
       </p>
       {entry.skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-1">
-          {entry.skills.map((skill) => (
+          {/* Secondary safety net: normalizeSkills() already runs at write
+              time (AI generation, draft publish, manual logs), this just
+              covers any older rows that predate that fix. */}
+          {normalizeSkills(entry.skills).map((skill) => (
             <span
               key={skill}
               className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-xs text-foreground/60"
@@ -155,9 +159,9 @@ function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?:
           ))}
         </div>
       )}
-      {!compact && entry.screenshot_urls.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3">
-          {entry.screenshot_urls.map((url) => (
+      {entry.screenshot_urls.length > 0 && (
+        <div className={`grid gap-2 pt-1 ${compact ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
+          {(compact ? entry.screenshot_urls.slice(0, 1) : entry.screenshot_urls).map((url) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={url}
