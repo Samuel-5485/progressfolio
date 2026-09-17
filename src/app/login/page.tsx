@@ -68,7 +68,7 @@ function LoginForm() {
 
       <button
         onClick={handleGithubLogin}
-        className="flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition hover:opacity-90"
+        className="flex w-full cursor-pointer items-center justify-center rounded-md bg-accent px-6 py-3 text-sm font-medium text-background transition hover:bg-accent-hover"
       >
         Continue with GitHub
       </button>
@@ -91,9 +91,9 @@ function LoginForm() {
         <button
           type="submit"
           disabled={status === "sending"}
-          className="rounded-full border border-foreground/20 px-6 py-2.5 text-sm font-medium transition hover:bg-foreground/5 disabled:opacity-50"
+          className="flex w-full cursor-pointer items-center justify-center rounded-md border border-foreground/20 px-6 py-2.5 text-sm font-medium transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {status === "sending" ? "Sending link..." : "Send magic link"}
+          {status === "sending" ? "Sending link..." : "Send link"}
         </button>
       </form>
 
