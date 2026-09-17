@@ -130,25 +130,37 @@ export function ManualLogForm({ userId }: { userId: string }) {
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm">
         Screenshots (optional)
         <input
+          id="screenshots"
           type="file"
           accept="image/*"
           multiple
           onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-          className="text-sm"
+          className="sr-only"
         />
+        <span className="inline-flex w-fit cursor-pointer items-center rounded-md border border-foreground/20 px-4 py-2 text-sm font-medium transition hover:bg-foreground/5">
+          Choose files
+        </span>
+        <span className="text-xs text-faint">
+          {files.length === 0
+            ? "No file chosen"
+            : files.map((file) => file.name).join(", ")}
+        </span>
       </label>
 
       <button
         type="submit"
         disabled={isBusy}
-        className="mt-2 w-fit rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+        className="mt-2 w-fit cursor-pointer rounded-md bg-foreground px-5 py-2 text-sm font-medium text-background transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {status === "uploading" ? "Uploading..." : status === "saving" ? "Saving..." : "Publish entry"}
+        {status === "uploading"
+          ? "Uploading..."
+          : status === "saving"
+            ? "Saving..."
+            : "Publish entry"}
       </button>
-
       {error && <p className="text-sm text-red-500">{error}</p>}
     </form>
   );
