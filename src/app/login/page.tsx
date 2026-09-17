@@ -68,7 +68,7 @@ function LoginForm() {
 
       <button
         onClick={handleGithubLogin}
-        className="flex w-full cursor-pointer items-center justify-center rounded-md bg-accent px-6 py-3 text-sm font-medium text-background transition hover:bg-accent-hover"
+        className="flex w-full cursor-pointer items-center justify-center rounded-md bg-[#f5793a] px-6 py-3 text-sm font-medium text-[#0a0a0a] transition hover:bg-[#e06d32]"
       >
         Continue with GitHub
       </button>

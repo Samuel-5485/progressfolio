@@ -52,7 +52,7 @@ const SOCIAL_LINKS = [
 export function Footer() {
   return (
     <footer className="border-t border-hairline">
-      <div className="mx-auto flex max-w-[1100px] flex-col gap-3 px-6 py-10 sm:flex-row sm:items-center sm:gap-5">
+      <div className="mx-auto flex max-w-[1100px] flex-col items-start gap-4 px-6 py-10">
         <div className="flex flex-col gap-1">
           <span className="text-sm font-semibold tracking-[-0.02em] text-foreground">
             ProgressFolio
