@@ -78,7 +78,7 @@ export function Footer() {
           </div>
         </div>
 
-        <p className="text-xs text-faint">
+        <p className="text-center text-xs text-faint">
           Designed & built by Samuel Diriba •{" "}
           <a
             href="mailto:samediriba54@gmail.com"
