@@ -46,6 +46,9 @@ export default async function DashboardPage() {
 
   const publishedCount = publishedDates?.length ?? 0;
   const streakWeeks = computeStreakWeeks((publishedDates ?? []).map((e) => e.entry_date as string));
+  // display_name is only set once the user picks one in /settings - fall
+  // back to their GitHub login, then their @username, but never the email.
+  const greetingName = profile?.display_name ?? profile?.github_login ?? profile?.username;
 
   const weeklyPost =
     profile && publishedCount > 0
@@ -62,7 +65,7 @@ export default async function DashboardPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">
-            Welcome{profile?.display_name ? `, ${profile.display_name}` : ""}
+            Welcome{greetingName ? `, ${greetingName}` : ""}
           </h1>
           {profile?.username && (
             <p className="text-sm text-foreground/60">
