@@ -26,10 +26,16 @@ export async function ensureProfile(
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const username = attempt === 0 ? base : withRandomSuffix(base);
+    const displayName = githubLogin ?? user.email ?? null;
+
+    // #region agent log
+    fetch('http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dfb447'},body:JSON.stringify({sessionId:'dfb447',hypothesisId:'H1',location:'src/lib/supabase/profile.ts:ensureProfile',message:'new profile row being created - checking what value is chosen for display_name',data:{hasGithubLogin: githubLogin != null,displayNameSource: githubLogin != null ? 'github_login' : (user.email != null ? 'user_email' : 'null'),displayNameLooksLikeEmail: typeof displayName === 'string' && displayName.includes('@')},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion agent log
+
     const { error } = await supabase.from("profiles").insert({
       id: user.id,
       username,
-      display_name: githubLogin ?? user.email ?? null,
+      display_name: displayName,
       github_login: githubLogin ?? null,
     });
 
