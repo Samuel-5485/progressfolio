@@ -36,11 +36,48 @@ export interface WeeklyPostResult {
   isoWeek: string;
 }
 
+/** True when the post cites a "Week N" / ISO-week number that is not the
+ * user's shipping streak - the original bug ("Week 38" vs "2-week streak"). */
+function citesMismatchedCalendarWeek(text: string, streakWeeks: number): boolean {
+  const iso = text.match(/\b20\d{2}-W(\d{2})\b/);
+  if (iso && Number(iso[1]) !== streakWeeks) return true;
+  const week = text.match(/\bWeek\s+(\d{1,2})\b/i);
+  if (week && Number(week[1]) !== streakWeeks) return true;
+  return false;
+}
+
+function debugLog(payload: {
+  hypothesisId: string;
+  location: string;
+  message: string;
+  data: Record<string, unknown>;
+}) {
+  // #region agent log
+  fetch("http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "dfb447",
+    },
+    body: JSON.stringify({
+      sessionId: "dfb447",
+      runId: "post-fix",
+      timestamp: Date.now(),
+      ...payload,
+    }),
+  }).catch(() => {});
+  // #endregion
+}
+
 /**
  * Returns this week's cached share post if one exists, otherwise
  * generates one via Gemini Flash-Lite from this week's published
  * entries and caches it. Returns null if there's nothing published
  * this week yet. Pass `force: true` to bypass the cache and regenerate.
+ *
+ * Cached posts that still mention a calendar week-of-year (e.g. "Week 38")
+ * are treated as stale and regenerated, so a prompt-only fix cannot leave
+ * the old text on the dashboard.
  */
 export async function getOrGenerateWeeklyPost(params: {
   supabase: SupabaseClient;
@@ -52,6 +89,16 @@ export async function getOrGenerateWeeklyPost(params: {
   const { supabase, userId, profile, siteUrl, force = false } = params;
   const { startIso, endIso, label } = currentWeekRange();
 
+  const { data: allPublishedDates } = await supabase
+    .from("timeline_entries")
+    .select("entry_date")
+    .eq("user_id", userId)
+    .eq("status", "published");
+
+  const streakWeeks = computeStreakWeeks(
+    (allPublishedDates ?? []).map((e) => e.entry_date as string)
+  );
+
   if (!force) {
     const { data: cached } = await supabase
       .from("weekly_posts")
@@ -60,7 +107,31 @@ export async function getOrGenerateWeeklyPost(params: {
       .eq("iso_week", label)
       .maybeSingle();
 
-    if (cached) return { postText: cached.post_text as string, isoWeek: label };
+    if (cached) {
+      const postText = cached.post_text as string;
+      const stale = citesMismatchedCalendarWeek(postText, streakWeeks);
+      debugLog({
+        hypothesisId: "H1",
+        location: "src/lib/timeline/weekly.ts:cache",
+        message: "weekly post cache lookup",
+        data: {
+          force,
+          cacheHit: true,
+          stale,
+          streakWeeks,
+          isoWeekLabel: label,
+          preview: postText.slice(0, 120),
+        },
+      });
+      if (!stale) return { postText, isoWeek: label };
+    } else {
+      debugLog({
+        hypothesisId: "H1",
+        location: "src/lib/timeline/weekly.ts:cache",
+        message: "weekly post cache lookup",
+        data: { force, cacheHit: false, streakWeeks, isoWeekLabel: label },
+      });
+    }
   }
 
   const { data: entries } = await supabase
@@ -74,19 +145,6 @@ export async function getOrGenerateWeeklyPost(params: {
 
   if (!entries || entries.length === 0) return null;
 
-  // Same source of truth as the dashboard's "Streak: N weeks" - computed
-  // from ALL published dates, not just this calendar week, so the share
-  // post always agrees with what's shown elsewhere in the UI.
-  const { data: allPublishedDates } = await supabase
-    .from("timeline_entries")
-    .select("entry_date")
-    .eq("user_id", userId)
-    .eq("status", "published");
-
-  const streakWeeks = computeStreakWeeks(
-    (allPublishedDates ?? []).map((e) => e.entry_date as string)
-  );
-
   const postText = await generateWeeklyPost({
     displayName: profile.display_name ?? profile.username,
     streakWeeks,
@@ -95,6 +153,19 @@ export async function getOrGenerateWeeklyPost(params: {
       whatShipped: e.summary,
     })),
     profileUrl: `${siteUrl}/u/${profile.username}`,
+  });
+
+  debugLog({
+    hypothesisId: "H2",
+    location: "src/lib/timeline/weekly.ts:generate",
+    message: "weekly post generated",
+    data: {
+      force,
+      streakWeeks,
+      isoWeekLabel: label,
+      stillMismatched: citesMismatchedCalendarWeek(postText, streakWeeks),
+      preview: postText.slice(0, 160),
+    },
   });
 
   await supabase

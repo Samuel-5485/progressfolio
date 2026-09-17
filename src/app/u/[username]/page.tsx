@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { EntryCard } from "@/components/entry-card";
 import { createClient } from "@/lib/supabase/server";
 import { computeStreakWeeks } from "@/lib/streak";
-import { normalizeSkills } from "@/lib/skills";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
 const FEATURED_COUNT = 3;
@@ -103,7 +103,12 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
               </h2>
               <div className="grid gap-4 sm:grid-cols-3">
                 {featured.map((entry) => (
-                  <EntryCard key={entry.id} entry={entry} compact />
+                  <EntryCard
+                    key={entry.id}
+                    entry={entry}
+                    compact
+                    location="u/[username]/page.tsx:highlights"
+                  />
                 ))}
               </div>
             </section>
@@ -117,7 +122,10 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
               <ul className="flex flex-col gap-4">
                 {rest.map((entry) => (
                   <li key={entry.id}>
-                    <EntryCard entry={entry} />
+                    <EntryCard
+                      entry={entry}
+                      location="u/[username]/page.tsx:timeline"
+                    />
                   </li>
                 ))}
               </ul>
@@ -130,61 +138,5 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
         Built with ProgressFolio - turn your commits into proof you ship.
       </footer>
     </main>
-  );
-}
-
-function EntryCard({ entry, compact = false }: { entry: TimelineEntry; compact?: boolean }) {
-  return (
-    <div className="flex flex-col gap-2 rounded-xl border border-foreground/10 p-4">
-      <span className="text-xs uppercase tracking-wide text-foreground/40">
-        {entry.entry_date}
-        {entry.source === "manual" && " · manual log"}
-      </span>
-      <h3 className="font-medium">{entry.title}</h3>
-      <p className={`text-sm text-foreground/70 ${compact ? "line-clamp-3" : ""}`}>
-        {entry.summary}
-      </p>
-      {entry.skills.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {/* Secondary safety net: normalizeSkills() already runs at write
-              time (AI generation, draft publish, manual logs), this just
-              covers any older rows that predate that fix. */}
-          {normalizeSkills(entry.skills).map((skill) => (
-            <span
-              key={skill}
-              className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-xs text-foreground/60"
-            >
-              {skill}
-            </span>
-          ))}
-        </div>
-      )}
-      {entry.screenshot_urls.length > 0 && (
-        <div
-          className={`grid gap-2 pt-1 ${
-            compact || entry.screenshot_urls.length === 1
-              ? "grid-cols-1"
-              : "grid-cols-2 sm:grid-cols-3"
-          }`}
-        >
-          {(compact ? entry.screenshot_urls.slice(0, 1) : entry.screenshot_urls).map((url) => (
-            // Fixed-ratio wrapper + absolutely-positioned image: the crop
-            // box is a plain div sized purely by aspect-ratio/max-height,
-            // so the image can never stretch or distort regardless of its
-            // real dimensions or the grid's own sizing behavior.
-            <div
-              key={url}
-              className="relative aspect-video max-h-56 w-full overflow-hidden rounded-md border border-foreground/10"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
-            </div>
-          ))}
-        </div>
-      )}
-      {!compact && entry.lessons && (
-        <p className="pt-1 text-xs text-foreground/50">💡 {entry.lessons}</p>
-      )}
-    </div>
   );
 }

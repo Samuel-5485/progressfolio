@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
+import { EntryCard } from "@/components/entry-card";
 import { DraftInbox } from "./draft-inbox";
 import { regenerateEntriesAction, regenerateWeeklyPostAction } from "./actions";
 import { computeStreakWeeks } from "@/lib/streak";
@@ -38,14 +39,17 @@ export default async function DashboardPage() {
     .order("entry_date", { ascending: false })
     .returns<TimelineEntry[]>();
 
-  const { data: publishedDates } = await supabase
+  const { data: published } = await supabase
     .from("timeline_entries")
-    .select("entry_date")
+    .select("*")
     .eq("user_id", user.id)
-    .eq("status", "published");
+    .eq("status", "published")
+    .order("entry_date", { ascending: false })
+    .returns<TimelineEntry[]>();
 
-  const publishedCount = publishedDates?.length ?? 0;
-  const streakWeeks = computeStreakWeeks((publishedDates ?? []).map((e) => e.entry_date as string));
+  const publishedEntries = published ?? [];
+  const publishedCount = publishedEntries.length;
+  const streakWeeks = computeStreakWeeks(publishedEntries.map((e) => e.entry_date));
   // display_name is only set once the user picks one in /settings - fall
   // back to their GitHub login, then their @username, but never the email.
   const greetingName = profile?.display_name ?? profile?.github_login ?? profile?.username;
@@ -59,6 +63,31 @@ export default async function DashboardPage() {
           siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
         })
       : null;
+
+  // #region agent log
+  fetch("http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "dfb447",
+    },
+    body: JSON.stringify({
+      sessionId: "dfb447",
+      runId: "post-fix",
+      hypothesisId: "H1",
+      location: "src/app/dashboard/page.tsx",
+      message: "dashboard share post + published screenshots",
+      data: {
+        streakWeeks,
+        publishedCount,
+        entriesWithShots: publishedEntries.filter((e) => e.screenshot_urls.length > 0).length,
+        weeklyPreview: weeklyPost?.postText.slice(0, 160) ?? null,
+        mentionsWeek38: weeklyPost ? /week\s*38/i.test(weeklyPost.postText) : null,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
@@ -142,6 +171,19 @@ export default async function DashboardPage() {
           </p>
           <CopyButton text={weeklyPost.postText} />
         </div>
+      )}
+
+      {publishedEntries.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-medium">Recent published</h2>
+          <ul className="flex flex-col gap-4">
+            {publishedEntries.slice(0, 5).map((entry) => (
+              <li key={entry.id}>
+                <EntryCard entry={entry} location="dashboard/page.tsx:published" />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <DraftInbox drafts={drafts ?? []} />

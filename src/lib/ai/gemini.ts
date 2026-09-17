@@ -153,5 +153,35 @@ Return only the post text, nothing else.`;
   if (!text) {
     throw new Error("Gemini returned an empty response for weekly post.");
   }
-  return text.trim();
+
+  // Safety net: if the model still emits a calendar week-of-year (e.g.
+  // "Week 38"), rewrite that mention to the actual shipping streak so
+  // the dashboard copy can never contradict "Streak: N weeks".
+  const aligned = text.trim().replace(/\b20\d{2}-W\d{2}\b/g, `${streakWeeks}-week streak`).replace(/\bWeek\s+\d{1,2}\b/gi, `${streakWeeks}-week streak`);
+
+  // #region agent log
+  fetch("http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "dfb447",
+    },
+    body: JSON.stringify({
+      sessionId: "dfb447",
+      runId: "post-fix",
+      hypothesisId: "H2",
+      location: "src/lib/ai/gemini.ts:generateWeeklyPost",
+      message: "weekly post model output",
+      data: {
+        streakWeeks,
+        rawPreview: text.trim().slice(0, 160),
+        alignedPreview: aligned.slice(0, 160),
+        rewritten: aligned !== text.trim(),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
+  return aligned;
 }
