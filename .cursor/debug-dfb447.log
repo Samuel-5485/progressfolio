@@ -1,0 +1,2 @@
+{"sessionId":"dfb447","runId":"shared-timeline","hypothesisId":"H6","location":"dashboard/page.tsx:published","message":"screenshot thumb rendered","data":{"naturalWidth":1325,"naturalHeight":618,"boxW":589,"boxH":332,"objectFit":"cover","ratio":1.78},"timestamp":1789664541358}
+{"sessionId":"dfb447","runId":"shared-timeline","hypothesisId":"H6","location":"u/[username]/page.tsx:timeline","message":"screenshot thumb rendered","data":{"naturalWidth":1325,"naturalHeight":618,"boxW":589,"boxH":332,"objectFit":"cover","ratio":1.78},"timestamp":1789664547383}

@@ -57,14 +57,21 @@ export default function FeaturesPage() {
           </div>
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold tracking-[-0.02em]">
-              Paid <span className="text-faint">- coming soon</span>
+              Pro <span className="text-faint">- $9/mo, coming soon</span>
             </h3>
             <p className="text-sm text-muted">
-              $5-9/mo for unlimited repos, full commit history, no branding,
-              and PDF export.
+              Unlimited repos, full history, no branding, private logs, and
+              PDF export.
             </p>
           </div>
         </div>
+        <p className="pt-8 text-sm text-faint">
+          Full plan details on{" "}
+          <Link href="/pricing" className="underline underline-offset-4">
+            Pricing
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="flex flex-col items-center gap-4 border-t border-hairline py-16 text-center">

@@ -107,10 +107,13 @@ const sections = [
           ProgressFolio branding on your public page.
         </p>
         <p>
-          The paid plan ($5-9/mo, coming soon) removes branding and adds
-          unlimited repos, full history, and PDF export. Upgrade,
-          downgrade, and cancellation will be managed from your dashboard
-          once paid plans launch.
+          The paid plan ($9/mo, coming soon) removes branding and adds
+          unlimited repos, full history, and PDF export. See{" "}
+          <Link href="/pricing" className="underline underline-offset-4">
+            Pricing
+          </Link>
+          . Upgrade, downgrade, and cancellation will be managed from your
+          dashboard once paid plans launch.
         </p>
       </>
     ),
