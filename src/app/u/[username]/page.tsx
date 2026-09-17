@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EntryCard } from "@/components/entry-card";
+import { EntryTimeline } from "@/components/entry-timeline";
 import { createClient } from "@/lib/supabase/server";
 import { computeStreakWeeks } from "@/lib/streak";
 import type { Profile, TimelineEntry } from "@/lib/types";
-
-const FEATURED_COUNT = 3;
 
 async function getPublicProfile(username: string) {
   const supabase = await createClient();
@@ -52,8 +50,6 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
 
   const { profile, entries } = data;
   const streakWeeks = computeStreakWeeks(entries.map((e) => e.entry_date));
-  const featured = entries.slice(0, FEATURED_COUNT);
-  const rest = entries.slice(FEATURED_COUNT);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-12 px-6 py-16">
@@ -95,43 +91,11 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
           No public updates yet - check back soon.
         </p>
       ) : (
-        <>
-          {featured.length > 0 && (
-            <section className="flex flex-col gap-4">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/50">
-                Recent highlights
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {featured.map((entry) => (
-                  <EntryCard
-                    key={entry.id}
-                    entry={entry}
-                    compact
-                    location="u/[username]/page.tsx:highlights"
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {rest.length > 0 && (
-            <section className="flex flex-col gap-4">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/50">
-                Timeline
-              </h2>
-              <ul className="flex flex-col gap-4">
-                {rest.map((entry) => (
-                  <li key={entry.id}>
-                    <EntryCard
-                      entry={entry}
-                      location="u/[username]/page.tsx:timeline"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </>
+        <EntryTimeline
+          entries={entries}
+          location="u/[username]/page.tsx:timeline"
+          title="Timeline"
+        />
       )}
 
       <footer className="border-t border-foreground/10 pt-6 text-center text-xs text-foreground/40">

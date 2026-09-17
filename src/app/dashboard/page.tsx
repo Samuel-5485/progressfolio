@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
-import { EntryCard } from "@/components/entry-card";
+import { EntryTimeline } from "@/components/entry-timeline";
 import { DraftInbox } from "./draft-inbox";
 import { regenerateEntriesAction, regenerateWeeklyPostAction } from "./actions";
 import { computeStreakWeeks } from "@/lib/streak";
@@ -174,16 +174,11 @@ export default async function DashboardPage() {
       )}
 
       {publishedEntries.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="font-medium">Recent published</h2>
-          <ul className="flex flex-col gap-4">
-            {publishedEntries.slice(0, 5).map((entry) => (
-              <li key={entry.id}>
-                <EntryCard entry={entry} location="dashboard/page.tsx:published" />
-              </li>
-            ))}
-          </ul>
-        </section>
+        <EntryTimeline
+          entries={publishedEntries}
+          location="dashboard/page.tsx:published"
+          title="Recent published"
+        />
       )}
 
       <DraftInbox drafts={drafts ?? []} />

@@ -1,21 +1,19 @@
 "use client";
 
 /**
- * Fixed-ratio screenshot thumbnail used on the public profile and
- * dashboard. The crop box is a plain div; the image is absolutely
- * positioned so it can only cover, never stretch.
+ * Fixed 16:9 screenshot thumbnail used by the shared EntryCard on both
+ * the dashboard and the public profile. The crop box is a plain div; the
+ * image is absolutely positioned so it can only cover, never stretch.
  */
 export function ScreenshotThumb({
   url,
-  compact = false,
   location,
 }: {
   url: string;
-  compact?: boolean;
   location: string;
 }) {
   return (
-    <div className="relative aspect-video max-h-56 min-h-[7.5rem] w-full overflow-hidden rounded-md border border-foreground/10">
+    <div className="relative aspect-video w-full overflow-hidden rounded-md border border-foreground/10">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
@@ -33,12 +31,11 @@ export function ScreenshotThumb({
             },
             body: JSON.stringify({
               sessionId: "dfb447",
-              runId: "post-fix",
+              runId: "shared-timeline",
               hypothesisId: "H6",
               location,
               message: "screenshot thumb rendered",
               data: {
-                compact,
                 naturalWidth: el.naturalWidth,
                 naturalHeight: el.naturalHeight,
                 boxW: box ? Math.round(box.width) : null,
