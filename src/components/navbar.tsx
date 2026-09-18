@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const NAV_LINKS = [
@@ -9,13 +10,17 @@ const NAV_LINKS = [
 
 export function Navbar() {
   return (
-    <header className="border-b border-hairline">
+    <header className="sticky top-0 z-50 w-full shrink-0 border-b border-hairline bg-background/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-4 px-6 py-4">
-        <Link
-          href="/"
-          className="text-sm font-semibold tracking-[-0.02em] text-foreground rounded-md"
-        >
-          ProgressFolio
+        <Link href="/" className="rounded-md">
+          <Image
+            src="/logo.png"
+            alt="ProgressFolio"
+            width={882}
+            height={286}
+            className="block h-8 w-auto"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-muted md:flex">

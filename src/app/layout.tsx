@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "ProgressFolio - Turn your commits into a portfolio that proves you ship",
   description:
     "ProgressFolio connects to your GitHub account and automatically turns your commit activity into a polished, public, living timeline - no manual logging required.",
+  icons: {
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
