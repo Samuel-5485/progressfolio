@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/features", label: "Features" },
@@ -11,11 +12,8 @@ export function Navbar() {
   return (
     <header className="border-b border-hairline">
       <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-4 px-6 py-4">
-        <Link
-          href="/"
-          className="text-sm font-semibold tracking-[-0.02em] text-foreground rounded-md"
-        >
-          ProgressFolio
+        <Link href="/" className="flex items-center gap-2 rounded-md text-sm font-semibold tracking-[-0.02em] text-foreground">
+          <span className="brand-mark">P</span> ProgressFolio
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-muted md:flex">
@@ -35,7 +33,7 @@ export function Navbar() {
             href="/login"
             className="hidden rounded-md bg-accent px-4 py-2 text-sm font-medium text-background transition hover:bg-accent-hover sm:inline-flex"
           >
-            Connect GitHub
+            Start building <ArrowUpRight data-icon="inline-end" />
           </Link>
 
           <details className="relative md:hidden">
