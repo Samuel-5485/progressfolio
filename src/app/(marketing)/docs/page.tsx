@@ -107,13 +107,13 @@ const sections = [
           ProgressFolio branding on your public page.
         </p>
         <p>
-          The paid plan ($9/mo, coming soon) removes branding and adds
+          The Pro plan ($9/mo or $86/year) removes branding and adds
           unlimited repos, full history, and PDF export. See{" "}
           <Link href="/pricing" className="underline underline-offset-4">
             Pricing
           </Link>
-          . Upgrade, downgrade, and cancellation will be managed from your
-          dashboard once paid plans launch.
+          . Cancel or change interval from Manage billing (Polar customer
+          portal).
         </p>
       </>
     ),

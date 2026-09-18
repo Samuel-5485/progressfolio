@@ -1,6 +1,8 @@
 // Mirrors supabase/schema.sql. Keep these in sync when the schema changes.
 
-export type Plan = "free" | "paid";
+export type Plan = "free" | "pro";
+export type BillingInterval = "month" | "year";
+export type PlanStatus = "active" | "canceled" | "past_due" | "revoked";
 
 export interface Profile {
   id: string;
@@ -11,6 +13,12 @@ export interface Profile {
   github_login: string | null;
   streak_weeks: number;
   plan: Plan;
+  billing_interval: BillingInterval | null;
+  polar_customer_id: string | null;
+  polar_subscription_id: string | null;
+  polar_product_id: string | null;
+  plan_status: PlanStatus | null;
+  plan_current_period_end: string | null;
   onboarding_complete: boolean;
   created_at: string;
   updated_at: string;

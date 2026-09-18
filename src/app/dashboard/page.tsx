@@ -8,9 +8,15 @@ import { regenerateEntriesAction, regenerateWeeklyPostAction } from "./actions";
 import { computeStreakWeeks } from "@/lib/streak";
 import { getOrGenerateWeeklyPost } from "@/lib/timeline/weekly";
 import { CopyButton } from "@/components/copy-button";
+import { isPro } from "@/lib/billing/entitlements";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ upgrade?: string }>;
+}) {
+  const { upgrade } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -53,6 +59,7 @@ export default async function DashboardPage() {
   // display_name is only set once the user picks one in /settings - fall
   // back to their GitHub login, then their @username, but never the email.
   const greetingName = profile?.display_name ?? profile?.github_login ?? profile?.username;
+  const pro = isPro(profile);
 
   const weeklyPost =
     profile && publishedCount > 0
@@ -64,37 +71,17 @@ export default async function DashboardPage() {
         })
       : null;
 
-  // #region agent log
-  fetch("http://127.0.0.1:7405/ingest/f606287d-102e-4a04-817c-ef891adac058", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "dfb447",
-    },
-    body: JSON.stringify({
-      sessionId: "dfb447",
-      runId: "post-fix",
-      hypothesisId: "H1",
-      location: "src/app/dashboard/page.tsx",
-      message: "dashboard share post + published screenshots",
-      data: {
-        streakWeeks,
-        publishedCount,
-        entriesWithShots: publishedEntries.filter((e) => e.screenshot_urls.length > 0).length,
-        weeklyPreview: weeklyPost?.postText.slice(0, 160) ?? null,
-        mentionsWeek38: weeklyPost ? /week\s*38/i.test(weeklyPost.postText) : null,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">
+          <h1 className="flex items-center gap-2 text-xl font-semibold">
             Welcome{greetingName ? `, ${greetingName}` : ""}
+            {pro && (
+              <span className="rounded-md border border-accent px-2 py-0.5 text-xs font-medium text-accent">
+                Pro
+              </span>
+            )}
           </h1>
           {profile?.username && (
             <p className="text-sm text-foreground/60">
@@ -118,9 +105,25 @@ export default async function DashboardPage() {
           >
             Settings
           </Link>
+          {pro && (
+            <a
+              href="/portal"
+              className="cursor-pointer rounded-full border border-foreground/20 px-4 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
+            >
+              Manage billing
+            </a>
+          )}
           <SignOutButton />
         </div>
       </header>
+
+      {upgrade === "success" && (
+        <p className="rounded-md border border-accent bg-elevated px-4 py-3 text-sm text-muted">
+          {pro
+            ? "You're on Pro. Billing is managed in Polar."
+            : "Checkout complete. Pro unlocks as soon as Polar confirms the subscription."}
+        </p>
+      )}
 
       {!repoCount ? (
         <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 p-6">

@@ -57,7 +57,7 @@ export default function FeaturesPage() {
           </div>
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold tracking-[-0.02em]">
-              Pro <span className="text-faint">- $9/mo, coming soon</span>
+              Pro <span className="text-faint">- $9/mo or $86/year</span>
             </h3>
             <p className="text-sm text-muted">
               Unlimited repos, full history, no branding, private logs, and

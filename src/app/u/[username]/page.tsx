@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { EntryTimeline } from "@/components/entry-timeline";
 import { createClient } from "@/lib/supabase/server";
 import { computeStreakWeeks } from "@/lib/streak";
+import { isPro } from "@/lib/billing/entitlements";
 import type { Profile, TimelineEntry } from "@/lib/types";
 
 async function getPublicProfile(username: string) {
@@ -98,9 +99,11 @@ export default async function PublicProfilePage({ params }: PageProps<"/u/[usern
         />
       )}
 
-      <footer className="border-t border-foreground/10 pt-6 text-center text-xs text-foreground/40">
-        Built with ProgressFolio - turn your commits into proof you ship.
-      </footer>
+      {!isPro(profile) && (
+        <footer className="border-t border-foreground/10 pt-6 text-center text-xs text-foreground/40">
+          Built with ProgressFolio - turn your commits into proof you ship.
+        </footer>
+      )}
     </main>
   );
 }

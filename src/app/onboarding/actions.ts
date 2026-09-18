@@ -6,6 +6,7 @@ import { createPushWebhook } from "@/lib/github/client";
 import { importRecentCommits } from "@/lib/github/import";
 import { generateDraftEntries } from "@/lib/timeline/generate";
 import type { GithubAccount, Profile } from "@/lib/types";
+import { isPro } from "@/lib/billing/entitlements";
 
 const FREE_PLAN_REPO_LIMIT = 1;
 
@@ -45,7 +46,7 @@ export async function connectRepoAction(
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
-  if (profile?.plan === "free" && (existingRepoCount ?? 0) >= FREE_PLAN_REPO_LIMIT) {
+  if (!isPro(profile) && (existingRepoCount ?? 0) >= FREE_PLAN_REPO_LIMIT) {
     return { error: "Free plan supports 1 connected repo. Upgrade to add more." };
   }
 

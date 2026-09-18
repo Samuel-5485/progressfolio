@@ -56,6 +56,13 @@ builder's real shipping activity into a clean, living timeline of proof.
    sync near-instantly instead of waiting for "Sync now". This is skipped
    automatically on `localhost` since GitHub can't reach it.
 
+8. **Polar billing.** Run [`supabase/migrations/20260917_polar_billing.sql`](supabase/migrations/20260917_polar_billing.sql)
+   in the Supabase SQL editor (or the full [`schema.sql`](supabase/schema.sql)
+   on a fresh project). Create matching recurring products in Polar
+   (Pro Monthly $9, Pro Yearly $86) for **sandbox** (local/preview) and
+   **production** (Vercel Production) — use separate product IDs and
+   tokens per environment. See the Polar section below.
+
 ## Project structure
 
 ```
@@ -64,8 +71,12 @@ src/
     dashboard/         Draft inbox, weekly post, manual log entry
     onboarding/         GitHub connect + repo picker + first import
     u/[username]/       Public portfolio page
-    api/webhooks/github/  Push webhook receiver (incremental sync)
+    api/webhook/polar/ Polar subscription webhooks
+    checkout/          Polar checkout (monthly | yearly)
+    portal/            Polar customer portal
   lib/
+    billing/           isPro() + webhook subscription sync
+    polar.ts           Polar env/product helpers
     supabase/          Browser + server + service-role Supabase clients
     ai/gemini.ts        The only AI entry point (Gemini Flash-Lite)
     github/             Octokit client, commit import, webhook registration
@@ -81,3 +92,28 @@ supabase/
 This project uses **Google Gemini Flash-Lite exclusively** for all text
 rewriting/summarization. See [`.cursor/rules/ai-model-policy.mdc`](.cursor/rules/ai-model-policy.mdc).
 Do not add OpenAI/Claude/other providers unless explicitly requested.
+
+## Polar billing
+
+Checkout lives at `/checkout?plan=monthly|yearly`, the customer portal at
+`/portal`, and Polar webhooks at `POST /api/webhook/polar`.
+
+`POLAR_SERVER=sandbox` uses Polar sandbox (local and Vercel Preview).
+Any other value, including `production`, uses Polar production.
+
+Production webhook URL:
+
+`https://progressfolio.vercel.app/api/webhook/polar`
+
+Local Polar webhooks (ngrok):
+
+```bash
+ngrok http 3000
+```
+
+In Polar (sandbox for local, production for Vercel): Settings → Webhooks →
+Add endpoint `https://<host>/api/webhook/polar`. Enable
+`subscription.created`, `subscription.active`, `subscription.updated`,
+`subscription.canceled`, `subscription.revoked`, and
+`subscription.past_due`. Paste the signing secret into
+`POLAR_WEBHOOK_SECRET`.

@@ -14,7 +14,13 @@ create table if not exists public.profiles (
   avatar_url text,
   github_login text,
   streak_weeks integer not null default 0,
-  plan text not null default 'free' check (plan in ('free', 'paid')),
+  plan text not null default 'free' check (plan in ('free', 'pro')),
+  billing_interval text check (billing_interval is null or billing_interval in ('month', 'year')),
+  polar_customer_id text,
+  polar_subscription_id text,
+  polar_product_id text,
+  plan_status text check (plan_status is null or plan_status in ('active', 'canceled', 'past_due', 'revoked')),
+  plan_current_period_end timestamptz,
   onboarding_complete boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -199,3 +205,48 @@ create trigger set_updated_at before update on public.profiles
 drop trigger if exists set_updated_at on public.timeline_entries;
 create trigger set_updated_at before update on public.timeline_entries
   for each row execute function public.set_updated_at();
+
+create index if not exists profiles_polar_customer_id_idx
+  on public.profiles (polar_customer_id);
+
+create index if not exists profiles_polar_subscription_id_idx
+  on public.profiles (polar_subscription_id);
+
+-- Billing columns: readable (public page branding). Writable only by
+-- the service role (Polar webhook). Logged-in users cannot self-upgrade.
+create or replace function public.protect_profile_billing()
+returns trigger
+language plpgsql
+as $$
+begin
+  if coalesce(auth.role(), '') = 'service_role' or current_user = 'postgres' then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    new.plan := 'free';
+    new.billing_interval := null;
+    new.polar_customer_id := null;
+    new.polar_subscription_id := null;
+    new.polar_product_id := null;
+    new.plan_status := null;
+    new.plan_current_period_end := null;
+    return new;
+  end if;
+
+  new.plan := old.plan;
+  new.billing_interval := old.billing_interval;
+  new.polar_customer_id := old.polar_customer_id;
+  new.polar_subscription_id := old.polar_subscription_id;
+  new.polar_product_id := old.polar_product_id;
+  new.plan_status := old.plan_status;
+  new.plan_current_period_end := old.plan_current_period_end;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profile_billing on public.profiles;
+create trigger protect_profile_billing
+  before insert or update on public.profiles
+  for each row
+  execute function public.protect_profile_billing();
